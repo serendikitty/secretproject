@@ -50,9 +50,13 @@ if (typeof window !== "undefined") {
 }
 
 // Initialize Firestore with settings to avoid GRPC issues on server
-const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-});
+// In Next.js dev mode, we check if there's already an app to avoid re-initializing Firestore
+const db = getApps().length > 0 
+  ? getFirestore(app) 
+  : initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+    });
+
 export { app, analytics, db };
 
 /**
@@ -86,7 +90,8 @@ export async function getPerfumesFromDB(): Promise<Perfume[]> {
     // If on server, use REST API to avoid GRPC issues in Next.js Server Components
     if (typeof window === "undefined") {
       const response = await fetch(
-        `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/perfumes?mask.fieldPaths=brand&mask.fieldPaths=name&mask.fieldPaths=notes&mask.fieldPaths=occasionTag&mask.fieldPaths=avgRating&mask.fieldPaths=imageUrl&mask.fieldPaths=price&mask.fieldPaths=createdAt`
+        `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/perfumes?mask.fieldPaths=brand&mask.fieldPaths=name&mask.fieldPaths=notes&mask.fieldPaths=occasionTag&mask.fieldPaths=avgRating&mask.fieldPaths=imageUrl&mask.fieldPaths=price&mask.fieldPaths=createdAt`,
+        { cache: 'no-store' }
       );
       const data = await response.json();
       
@@ -131,7 +136,8 @@ export async function getArticlesFromDB(): Promise<Article[]> {
     // If on server, use REST API
     if (typeof window === "undefined") {
       const response = await fetch(
-        `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/articles`
+        `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/articles`,
+        { cache: 'no-store' }
       );
       const data = await response.json();
       

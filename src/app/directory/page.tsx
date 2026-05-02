@@ -2,6 +2,8 @@ import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { getPerfumesFromDB } from "@/lib/firebase"
 
+export const dynamic = 'force-dynamic';
+
 export default async function DirectoryPage() {
   const perfumes = await getPerfumesFromDB()
 
