@@ -1,7 +1,8 @@
 import Link from "next/link"
-import { perfumes } from "@/lib/data"
+import { getPerfumesFromDB } from "@/lib/firebase"
 
-export function DirectoryGrid() {
+export async function DirectoryGrid() {
+  const perfumes = await getPerfumesFromDB()
   return (
     <section id="directory" className="py-32 max-w-7xl mx-auto px-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">

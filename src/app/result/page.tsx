@@ -5,16 +5,30 @@ import Link from "next/link"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { useQuizStore } from "@/lib/store"
-import { perfumes } from "@/lib/data"
+import { getPerfumesFromDB } from "@/lib/firebase"
+import { type Perfume } from "@/lib/data"
 import { Button } from "@/components/ui/Button"
 import { motion } from "framer-motion"
-import { Sparkles, Trophy, CheckCircle2 } from "lucide-react"
+import { Sparkles, Trophy, CheckCircle2, Loader2 } from "lucide-react"
 
 export default function ResultPage() {
   const { answers } = useQuizStore()
+  const [perfumes, setPerfumes] = React.useState<Perfume[]>([])
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    async function loadPerfumes() {
+      const data = await getPerfumesFromDB()
+      setPerfumes(data)
+      setLoading(false)
+    }
+    loadPerfumes()
+  }, [])
   
   // Ranking logic
   const recommendedPerfumes = React.useMemo(() => {
+    if (perfumes.length === 0) return []
+
     // Sort perfumes based on how many tags they match
     const sorted = [...perfumes].sort((a, b) => {
       let scoreA = 0
@@ -23,12 +37,11 @@ export default function ResultPage() {
       if (a.occasionTag === answers.occasion) scoreA += 2
       if (b.occasionTag === answers.occasion) scoreB += 2
       
-      // Add more scoring based on notes or other logic if available
       return scoreB - scoreA
     })
     
     return sorted.slice(0, 5)
-  }, [answers])
+  }, [answers, perfumes])
 
   const compatibilityLabels = [
     { label: "Most Compatible", icon: <Trophy className="w-3 h-3" />, color: "bg-stone-900 text-stone-50" },
@@ -43,6 +56,21 @@ export default function ResultPage() {
     if (answers.vibe === "fresh") return "The Daylight"
     return "The Statement"
   }, [answers])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-10 h-10 text-stone-300 animate-spin" />
+            <p className="text-stone-400 font-serif italic">Analyzing your aura...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
