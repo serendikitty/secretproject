@@ -52,7 +52,6 @@ if (typeof window !== "undefined") {
 // Initialize Firestore with settings to avoid GRPC issues on server
 const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
-  useFetchStreams: false,
 });
 export { app, analytics, db };
 
